@@ -16,10 +16,10 @@ use crate::cube::{Algorithm, Cube, Turn, TurnDir, Twist, cubie::{CornerOrientati
 pub struct LookupTable(pub Vec<u8>);
 
 static CORNER_PERMUTATION_TABLE: OnceLock<LookupTable> = OnceLock::new();
-const CORNER_PERMUTATION_TABLE_FILE: &str = "tables/corner_permutation.bin";
+const CORNER_PERMUTATION_TABLE_FILE: &str = "tables/corner_permutations.bin";
 
 static CORNER_ORIENTATION_TABLE: OnceLock<LookupTable> = OnceLock::new();
-const CORNER_ORIENTATION_TABLE_FILE: &str = "tables/corner_orientation.bin";
+const CORNER_ORIENTATION_TABLE_FILE: &str = "tables/orientations.bin";
 
 pub fn get_permutation_table() -> &'static LookupTable {
     CORNER_PERMUTATION_TABLE.get_or_init(|| {
