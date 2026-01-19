@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rubiks_cube_solver'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=rubiks_cube_solver",
+                    "--package=rubiks_cube_solver"
+                ],
+                "filter": {
+                    "name": "rubiks_cube_solver",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'rubiks_cube_solver'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=rubiks_cube_solver",
+                    "--package=rubiks_cube_solver"
+                ],
+                "filter": {
+                    "name": "rubiks_cube_solver",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

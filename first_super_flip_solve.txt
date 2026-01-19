@@ -1,0 +1,41 @@
+    WWW
+    WWW
+    WWW
+OOO GGG RRR BBB
+OOO GGG RRR BBB
+OOO GGG RRR BBB
+    YYY
+    YYY
+    YYY
+
+    WBW
+    OWR
+    WGW
+OWO GWG RWR BWB
+BOG OGR GRB RBO
+OYO GYG RYR BYB
+    YGY
+    OYR
+    YBY
+
+Checking bound: 4
+Checking bound: 5
+Checking bound: 6
+Checking bound: 7
+Checking bound: 8
+Checking bound: 9
+Checking bound: 10
+Checking bound: 11
+Checking bound: 12
+Reached g1 in 3827.7614029s: F U R2 L' D2 F L D R B L
+Loading lookup table from file...
+Checking bound: 6
+Checking bound: 7
+Checking bound: 8
+Checking bound: 9
+Checking bound: 10
+Checking bound: 11
+Checking bound: 12
+Checking bound: 13
+Solved in 3830.4617183s: L2 F2 D R2 L2 D2 B2 U' L2 U2 F2 L2 D'
+F U R2 L' D2 F L D R B L L2 F2 D R2 L2 D2 B2 U' L2 U2 F2 L2 D'
