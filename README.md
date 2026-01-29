@@ -29,37 +29,37 @@ The CLI offers different special commands that are typed out like:
 !<name> <arg1> <arg2> ...
 ```
 
-#### !quit / !exit
+#### `!quit / !exit`
 Terminates the program.
 
-#### !echo <arg1> <arg2> ...
+#### `!echo <arg1> <arg2> ...`
 Just for testing, just prints out the arguments.
 ```
 > !echo hello world
 hello world
 ```
 
-#### !solve
+#### `!solve`
 Finds a solution to the current state of the cube using Kociemba's algorithm, which I implemented myself.
 
-#### !reset
+#### `!reset`
 Resets the cube to the solved state.
 
-#### !alg <alg_name>
+#### `!alg <alg_name>`
 (WIP: Is not implemented currently)
 Executes algorithm to cube, custom algorithms can be inputted into file.
 ```
 > !alg jperm
 ```
 
-#### !scramble <length>
-Does <length> random moves to the cube. Moves of the same or opposite face can't be redundantly repeated.
+#### `!scramble <length>`
+Does <length> random moves to the cube. Moves of the same or opposite face are not redundantly repeated.
 ```
 > !scramble 20
 ```
 
 ### Multiple commands
-Mutliple commands can be run in sequence on the same line by sepperating them with ';'. Example:
+Mutliple commands can be run in sequence on the same line by sepperating them with '`;`'. Example:
 
 ```
 > !scramble 20; !solve; !echo yay
