@@ -64,12 +64,6 @@ impl EdgeId {
     }
 }
 
-impl convert::Into<usize> for EdgeId {
-    fn into(self) -> usize {
-        self as usize
-    }
-}
-
 // Important: If the ordering of the edges are changed, then the look up table for the heuristic will not work.
 #[derive(Copy, Clone)]
 pub enum EdgePos {
@@ -92,11 +86,6 @@ pub enum CornerId {
 }
 index_enum!(CornerId);
 
-impl convert::Into<usize> for CornerId {
-    fn into(self) -> usize {
-        self as usize
-    }
-}
 
 impl CornerId {
     // returns colors starting from white / yellow and going clockwise
@@ -161,8 +150,8 @@ impl Corner {
     }
 }
 
-impl convert::Into<usize> for Corner {
-    fn into(self) -> usize {
-        self.id as usize
-    }
-}
+// impl convert::Into<usize> for Corner {
+//     fn into(self) -> usize {
+//         self.id as usize
+//     }
+// }

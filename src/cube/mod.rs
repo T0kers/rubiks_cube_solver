@@ -1,124 +1,12 @@
-use rand::seq::IteratorRandom;
-
 pub mod cubie;
 use cubie::*;
 
-#[derive(Eq, PartialEq, Clone, Copy)]
-pub enum Turn {
-    U, L, F, R, B, D
-}
+pub mod algs;
+use algs::*;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum TurnDir {
-    None, One, Two, Prime
-}
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Twist {
-    pub turn: Turn,
-    dir: TurnDir,
-}
 
-impl Twist {
-    pub const fn new(turn: Turn, dir: TurnDir) -> Self {
-        Self { turn, dir }
-    }
-
-    pub fn new_random(prev_move: Option<Turn>) -> Self {
-        let mut rng = rand::rng();
-        Self::allowed_moves(prev_move).choose(&mut rng).unwrap()
-    }
-
-    pub fn inverse(self) -> Self {
-        match self {
-            Twist { turn, dir: TurnDir::None } => Twist { turn, dir: TurnDir::None },
-            Twist { turn, dir: TurnDir::One } => Twist { turn, dir: TurnDir::Prime },
-            Twist { turn, dir: TurnDir::Two } => Twist { turn, dir: TurnDir::Two },
-            Twist { turn, dir: TurnDir::Prime } => Twist { turn, dir: TurnDir::One },
-        }
-    }
-
-    pub const ALL_MOVES: [Twist; 18] = [
-        Twist { turn: Turn::U, dir: TurnDir::One },
-        Twist { turn: Turn::U, dir: TurnDir::Two },
-        Twist { turn: Turn::U, dir: TurnDir::Prime },
-        Twist { turn: Turn::D, dir: TurnDir::One },
-        Twist { turn: Turn::D, dir: TurnDir::Two },
-        Twist { turn: Turn::D, dir: TurnDir::Prime },
-        Twist { turn: Turn::F, dir: TurnDir::One },
-        Twist { turn: Turn::F, dir: TurnDir::Two },
-        Twist { turn: Turn::F, dir: TurnDir::Prime },
-        Twist { turn: Turn::B, dir: TurnDir::One },
-        Twist { turn: Turn::B, dir: TurnDir::Two },
-        Twist { turn: Turn::B, dir: TurnDir::Prime },
-        Twist { turn: Turn::L, dir: TurnDir::One },
-        Twist { turn: Turn::L, dir: TurnDir::Two },
-        Twist { turn: Turn::L, dir: TurnDir::Prime },
-        Twist { turn: Turn::R, dir: TurnDir::One },
-        Twist { turn: Turn::R, dir: TurnDir::Two },
-        Twist { turn: Turn::R, dir: TurnDir::Prime },
-    ];
-
-    pub fn allowed_moves(prev: Option<Turn>) -> impl Iterator<Item = Twist> {
-        Self::allowed_moves_from_moveset(&Self::ALL_MOVES, prev)
-    }
-    pub fn allowed_moves_from_moveset(moveset: &[Twist], prev: Option<Turn>) -> impl Iterator<Item = Twist> {
-        moveset.iter().filter(move |m| {
-            match prev {
-                None => true,
-                Some(p) => match p {
-                    Turn::U | Turn::R | Turn::F => m.turn != p,
-                    Turn::L => {m.turn != Turn::L && m.turn != Turn::R}
-                    Turn::B => {m.turn != Turn::B && m.turn != Turn::F}
-                    Turn::D => {m.turn != Turn::D && m.turn != Turn::U}
-                }
-            }
-        }).cloned()
-    }
-}
-
-impl std::fmt::Display for Twist {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let turn_str = match self.turn {
-            Turn::U => "U",
-            Turn::D => "D",
-            Turn::F => "F",
-            Turn::B => "B",
-            Turn::L => "L",
-            Turn::R => "R",
-        };
-        let dir_str = match self.dir {
-            TurnDir::One => "",
-            TurnDir::Two => "2",
-            TurnDir::Prime => "'",
-            TurnDir::None => "0",
-        };
-        write!(f, "{}{}", turn_str, dir_str)
-    }
-}
-
-pub struct Algorithm {
-    pub twists: Vec<Twist>,
-}
-
-impl Algorithm {
-    pub fn new(twists: Vec<Twist>) -> Self {
-        Self { twists }
-    }
-    pub fn append(&mut self, other: &mut Self) {
-        self.twists.append(&mut other.twists);
-    }
-}
-
-impl std::fmt::Display for Algorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for m in &self.twists {
-            write!(f, "{} ", m)?;
-        }
-        Ok(())
-    }
-}
-
+// Struct for represening the 3x3x3 rubiks cube
 #[derive(Clone)]
 pub struct Cube {
     pub edges: [Edge; 12],
@@ -215,6 +103,16 @@ impl Cube {
             }
         }
     }
+    pub fn apply_algorithm(&mut self, alg: Algorithm) {
+        for twist in alg.twists {
+            self.twist(twist);
+        }
+    }
+    pub fn apply_const_algorithm<const N: usize>(&mut self, alg: ConstAlgorithm<N>) {
+        for twist in alg.twists {
+            self.twist(twist);
+        }
+    }
     pub fn is_solved(&self) -> bool {
         self.edges == Self::SOLVED_EDGES && self.corners == Self::SOLVED_CORNERS
     }
@@ -294,24 +192,22 @@ impl Cube {
     // Turns the current state of the pieces orientation into a unique number
     // One corner and one edge is omitted, because its orientation is determined by the others
     // The specific corner piece is ignored (so colors ignored) only orientation is used
+    // used for database lookup for heuristic
     pub fn get_orientation(&self) -> usize {
         let corner_orient = self.corners.iter().skip(1).enumerate().fold(0, |acc, (i, c)| acc + (c.orientation as usize) * 3usize.pow(i as u32));
         let edge_orient = self.edges.iter().skip(1).enumerate().fold(0, |acc, (i, c)| acc + (c.flipped as usize) * 2usize.pow(i as u32));
         corner_orient + edge_orient * 3usize.pow(7)
     }
 
-    fn get_color(&self, face: Face, sticker: usize) -> char {
-        match face {
-            Face::Up => self.get_face_color(Face::Up, sticker),
-            Face::Down => self.get_face_color(Face::Down, sticker),
-            Face::Front => self.get_face_color(Face::Front, sticker),
-            Face::Back => self.get_face_color(Face::Back, sticker),
-            Face::Left => self.get_face_color(Face::Left, sticker),
-            Face::Right => self.get_face_color(Face::Right, sticker),
-        }
+    // Returns an array with u8 with one element for each corner
+    // where the u8 is the numeric value for the CornerId
+    // i. e. the goal / solved position of each corner
+    // used for database lookup for heuristic
+    pub fn get_corner_permutation(&self) -> [u8; 8] {
+        self.corners.map(|t| t.id as u8)
     }
 
-    fn get_face_color(&self, face: Face, sticker: usize) -> char {
+    fn get_color(&self, face: Face, sticker: usize) -> char {
         // Sticker layout:
         // 0 1 2
         // 3 4 5

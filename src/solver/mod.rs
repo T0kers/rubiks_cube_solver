@@ -1,14 +1,14 @@
-// use crate::cube::Cube;
 
 use std::collections::VecDeque;
 use std::fs;
+use std::io::Write;
 use std::path::Path;
 use std::{sync::OnceLock, usize::MAX};
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 
-use crate::cube::{Algorithm, Cube, Turn, TurnDir, Twist, cubie::{CornerOrientation, EdgeId, EdgePos}};
+use crate::cube::{Cube, cubie::{CornerOrientation, EdgeId, EdgePos}, algs::{Algorithm, Turn, TurnDir, Twist}};
 
 
 // Define the table type (make it serializable)
@@ -61,7 +61,7 @@ fn compute_permutation_table() -> LookupTable {
 
 fn permutation_table_compute(cube: &mut Cube, depth: u8, move_count: u8, prev_turn: Option<Turn>, table: &mut Vec<u8>) {
     if move_count == depth {
-        let i = encode_permutation(&cube.corners);
+        let i = encode_permutation(&cube.get_corner_permutation());
         if table[i] == std::u8::MAX {
             table[i] = depth;
         }
@@ -113,7 +113,7 @@ fn compute_orientation_lookup_table() -> LookupTable {
     dequeue.push_back((cube, depth + 1));
 
     while let Some((mut cube, depth)) = dequeue.pop_front() {
-        for twist in Twist::ALL_MOVES {
+        for twist in Twist::ALL_TWISTS {
             cube.twist(twist);
 
             let orient = cube.get_orientation();
@@ -155,7 +155,7 @@ fn g1_heuristic(cube: &Cube) -> usize {
 }
 
 fn solved_heuristic(cube: &Cube) -> usize {
-    let i = encode_permutation(&cube.corners);
+    let i = encode_permutation(&cube.get_corner_permutation());
     get_permutation_table().0[i] as usize
 }
 
@@ -163,8 +163,7 @@ fn solved_heuristic(cube: &Cube) -> usize {
 // and converts to integer using factorial numbering system
 // https://en.wikipedia.org/wiki/Factorial_number_system
 // https://en.wikipedia.org/wiki/Lehmer_code
-pub fn encode_permutation<T: Copy + Into<usize>, const N: usize>(permutation: &[T; N]) -> usize {
-    let perm = permutation.map(|t| t.into());
+pub fn encode_permutation<const N: usize>(perm: &[u8; N]) -> usize {
     let mut factoradic: [usize; N] = [0; N]; // last element is not needed, but rust cant do math with generic parameters :(
     for (i, pi) in perm.iter().take(perm.len() - 1).enumerate() { // skips last because no elements are after
         for pj in perm.iter().skip(i + 1) {
@@ -231,19 +230,22 @@ impl GroupInfo {
 
 pub fn solver(cube: &mut Cube) -> Algorithm {
     let start_time = Instant::now();
-    let mut alg = group_solver(cube, &GroupInfo { check: is_g1, heuristic: g1_heuristic, moveset: Twist::ALL_MOVES.to_vec() });
-    println!("Reached g1 in {:?}: {}", start_time.elapsed(), alg);
+    let mut alg = group_solver(cube, &GroupInfo { check: is_g1, heuristic: g1_heuristic, moveset: Twist::ALL_TWISTS.to_vec() });
+    println!("\nReached g1 in {:?}: {}", start_time.elapsed(), alg);
     let mut alg2 = group_solver(cube, &GroupInfo { check: Cube::is_solved, heuristic: solved_heuristic, moveset: GroupInfo::G1_MOVESET.to_vec() });
-    println!("Solved in {:?}: {}", start_time.elapsed(), alg2);
+    println!("\nSolved in {:?}: {}", start_time.elapsed(), alg2);
     alg.append(&mut alg2);
+    alg.simplify();
     alg
 }
 
 pub fn group_solver(cube: &mut Cube, g_info: &GroupInfo) -> Algorithm {
     let mut bound = (g_info.heuristic)(cube);
     let mut solution = vec![];
+    print!("Checking bound: ");
     loop {
-        println!("Checking bound: {}", bound);
+        print!("{}, ", bound);
+        std::io::stdout().flush().unwrap();
         let result = dfs(cube, 0, bound, None, g_info, &mut solution);
         match result {
             DfsResult::Found => {
@@ -310,14 +312,14 @@ mod tests {
         }
     }
 
-    fn uniqueness_of_encoded_permutation_helper<const N: usize>(perm: &mut [usize; N], options: Vec<usize>, encoded_perms: &mut Vec<usize>) {
+    fn uniqueness_of_encoded_permutation_helper<const N: usize>(perm: &mut [u8; N], options: Vec<u8>, encoded_perms: &mut Vec<usize>) {
         if options.is_empty() {
             encoded_perms.push(encode_permutation(perm));
             return;
         }
         let perm_idx = N - options.len();
         for (i, c) in options.iter().enumerate() {
-            let options_without_c: Vec<usize> = options.iter()
+            let options_without_c: Vec<u8> = options.iter()
                 .enumerate()
                 .filter(|(idx, _)| *idx != i)
                 .map(|(_, x)| x.clone())
