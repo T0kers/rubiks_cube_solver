@@ -1,4 +1,3 @@
-use std::convert;
 
 macro_rules! index_enum {
     ($name:ident) => {
@@ -149,9 +148,3 @@ impl Corner {
         }
     }
 }
-
-// impl convert::Into<usize> for Corner {
-//     fn into(self) -> usize {
-//         self.id as usize
-//     }
-// }

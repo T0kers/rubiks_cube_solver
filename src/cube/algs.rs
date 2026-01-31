@@ -1,5 +1,3 @@
-use std::fmt::write;
-
 use rand::{rngs::ThreadRng, seq::IteratorRandom};
 
 #[derive(Eq, PartialEq, Clone, Copy, Default, Debug)]
