@@ -103,9 +103,9 @@ impl Cube {
             }
         }
     }
-    pub fn apply_algorithm(&mut self, alg: Algorithm) {
-        for twist in alg.twists {
-            self.twist(twist);
+    pub fn apply_algorithm(&mut self, alg: &Algorithm) {
+        for twist in alg.twists.iter() {
+            self.twist(*twist);
         }
     }
     pub fn apply_const_algorithm<const N: usize>(&mut self, alg: ConstAlgorithm<N>) {

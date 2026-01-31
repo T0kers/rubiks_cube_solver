@@ -1,0 +1,2 @@
+1: R U2 R2 F R F' U2 R' F R F'
+3: F U R U' R' F' U F R U R' U' F'

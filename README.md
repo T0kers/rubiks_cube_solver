@@ -46,10 +46,18 @@ Finds a solution to the current state of the cube using Kociemba's algorithm, wh
 Resets the cube to the solved state.
 
 #### `!alg <alg_name>`
-(WIP: Is not implemented currently)
-Executes algorithm to cube, custom algorithms can be inputted into file.
+Executes algorithm to cube, custom algorithms can be inputted into the `algs/` directory. Subdirectories are accessed by dots. The algorithms themselves are in txt files formatted like:
 ```
-> !alg jperm
+J: R U R' F' R U R' U' R' F R2 U' R' U'
+T: R U R' U' R' F R2 U' R' U' R U R' F'
+```
+The algorithms above can in the source code be found in `algs/cfop/pll.txt`. The algorithms are then called with the following commands respectively:
+```
+> !alg cfop.pll.J
+```
+and
+```
+> !alg cfop.pll.T
 ```
 
 #### `!scramble <length>`
